@@ -2,7 +2,7 @@ import { Edge } from "./Edge";
 import { RoadNode } from "./RoadNode";
 import * as fs from "fs";
 import * as path from "path";
-import { MatrixGraph } from "./MatrixGraph";
+import { MatrixGraph } from "./graph/MatrixGraph";
 
 const AddVehicleCommandName = "addVehicle";
 const StepCommandName = "step";
@@ -65,7 +65,7 @@ class Preset {
             const collidingEdges = value.map(edge => Edge.createFrom(edge));
 
             collidingEdges.forEach(edge => {
-                edgeCollisionsMatrix.addEdgeBiDirectional(primaryEdge, edge);
+                edgeCollisionsMatrix.addEdge(primaryEdge, edge);
             });
         }
 

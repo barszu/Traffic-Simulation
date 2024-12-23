@@ -5,7 +5,8 @@ import { isSameAlign } from "../Direction";
 import { CallbackExecutor, CallbackType } from "../util/CallbackExecutor";
 
 import { calculateCarsGoThroughNumber, config } from "../../appconfig/driving";
-import { MatrixGraph } from "../MatrixGraph";
+import { MatrixGraph } from "../graph/MatrixGraph";
+import { getAllIndependentSets } from "../graph/independentSet";
 
 type DescribedGroupType = { startNodes: Set<RoadNode>; edges: Set<Edge> };
 type GroupType = Set<Edge>;
@@ -25,59 +26,14 @@ type DescribedGroupTypeAsStrings = Array<string>;
 interface SimulationStatusAsStrings {
     recentActiveGroup: DescribedGroupTypeAsStrings;
     recentActiveFazeTime: number;
-    waitingTimeForGroup: Map<DescribedGroupTypeAsStrings, string>;
+    waitingTimeForGroup: Map<DescribedGroupTypeAsStrings, number>;
     carsInGroups: Map<DescribedGroupTypeAsStrings, number>;
 }
 
 function groupBy(nodes: Set<RoadNode>, edges: Set<Edge>, preGivenCollisions: MatrixGraph<Edge>): Array<GroupType> {
-    const groups = new Array<Set<Edge>>();
+    //funkcja do predefiniowania grup, mozna dopisac automatyczne wykrywanie kolizji, ktorych uzytkownik nie zadeklarowal
 
-    console.warn("PreGivenCollisions", preGivenCollisions);
-
-    function worker(edges: Set<Edge>) {
-        const marked = new MarkedNodes(nodes);
-
-        const edgesWithColisions = new Set<Edge>();
-        const group = new Set<Edge>();
-
-        let first: null | Edge = null;
-
-        for (const edge of edges) {
-            if (first === null) {
-                // pierwsza napotkana konfiguracja jest poprawna
-                first = edge;
-                marked.markEdge(edge);
-                group.add(edge);
-                continue;
-            }
-
-            if (preGivenCollisions.hasEdgeBiDirectional(first, edge)) {
-                // kolizja wyznaczona
-                edgesWithColisions.add(edge);
-            }
-
-            // wykrywanie kolizji maszynowo
-            if (marked.isMarked(edge.destinationNode)) {
-                edgesWithColisions.add(edge);
-            } else if (!isSameAlign(first.startNode.position, edge.startNode.position)) {
-                // z dwoch roznych kierunkow
-                // dla uproszczenia zakładam tu zawsze kolizje
-                edgesWithColisions.add(edge);
-            } else {
-                // brak kolizji dodaje do grupy
-                marked.markEdge(edge);
-                group.add(edge);
-            }
-        }
-
-        groups.push(group);
-        return edgesWithColisions;
-    }
-
-    while (edges.size > 0) {
-        edges = worker(edges);
-    }
-    return groups;
+    return getAllIndependentSets(preGivenCollisions);
 }
 
 function describeGroup(group: Array<GroupType>): Array<DescribedGroupType> {
@@ -104,10 +60,11 @@ abstract class AbstractSimulation {
 
     readonly lightChangedCallbacks = new CallbackExecutor();
     readonly carAddedCallbacks = new CallbackExecutor();
+    readonly lightStayCallbacks = new CallbackExecutor();
 
     private lastAddedCar: string | RoadNode | Edge = "";
 
-    getLastAddedCar(): string | RoadNode | Edge {
+    getWhereLastCarAdded(): string | RoadNode | Edge {
         return this.lastAddedCar;
     }
 
@@ -119,12 +76,17 @@ abstract class AbstractSimulation {
         this.carAddedCallbacks.addCallback(callback);
     }
 
+    addOnLightStayCallback(callback: CallbackType) {
+        this.lightStayCallbacks.addCallback(callback);
+    }
+
     constructor(nodes: Set<RoadNode>, edges: Set<Edge>, preGivenCollisions: MatrixGraph<Edge>) {
         this.allNodes = nodes;
         this.allEdges = edges;
         const groups = groupBy(nodes, edges, preGivenCollisions);
         this.describedGroups = describeGroup(groups);
         nodes.forEach(node => this.allNodesMap.set(node.toString(), node));
+        this.describedGroups.forEach(group => this.waitingTimeForGroup.set(group, 0));
     }
 
     getActiveGroup(): DescribedGroupType {
@@ -147,16 +109,20 @@ abstract class AbstractSimulation {
             waitingTimeForGroup: new Map(
                 Array.from(this.waitingTimeForGroup).map(([group, time]) => [
                     Array.from(group.edges).map(edge => edge.toString()),
-                    time.toString(),
+                    time,
                 ])
             ),
-            carsInGroups: new Map(
-                Array.from(this.getNumberOfCarsInGroups()).map(([group, cars]) => [
-                    Array.from(group.edges).map(edge => edge.toString()),
-                    cars,
-                ])
-            ),
+            carsInGroups: this.getNumberOfCarsInGroupsAsString(),
         };
+    }
+
+    getNumberOfCarsInGroupsAsString(): Map<DescribedGroupTypeAsStrings, number> {
+        return new Map(
+            Array.from(this.getNumberOfCarsInGroups()).map(([group, cars]) => [
+                Array.from(group.edges).map(edge => edge.toString()),
+                cars,
+            ])
+        );
     }
 
     protected addWaitingTime(excludedGroup: DescribedGroupType) {
@@ -173,10 +139,13 @@ abstract class AbstractSimulation {
         if (this.currActiveGroupIdx === groupIdx) {
             this.addWaitingTime(this.getActiveGroup()); //using old group
             this.currActiveFazesCount++;
+
+            this.lightStayCallbacks.executeAllCallback();
         } else {
             this.currActiveGroupIdx = groupIdx;
             this.addWaitingTime(this.getActiveGroup()); //using new group
             this.currActiveFazesCount = 0;
+
             this.lightChangedCallbacks.executeAllCallback();
         }
     }

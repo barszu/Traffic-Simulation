@@ -1,4 +1,4 @@
-import { MatrixGraph } from "../src/MatrixGraph";
+import { MatrixGraph } from "../src/graph/MatrixGraph";
 
 class Vertex {
     constructor(public id: number, public label: string) {}
@@ -25,28 +25,28 @@ describe("MatrixGraph1", () => {
     });
 
     it("should add an edge between two vertices", () => {
-        graph.addEdge(vertexA, vertexB);
-        expect(graph.hasEdge(vertexA, vertexB)).toBe(true);
-        expect(graph.hasEdge(vertexB, vertexA)).toBe(false);
+        graph.addEdgeOneDirectional(vertexA, vertexB);
+        expect(graph.hasEdgeOneDirectional(vertexA, vertexB)).toBe(true);
+        expect(graph.hasEdgeOneDirectional(vertexB, vertexA)).toBe(false);
     });
 
     it("should add a bidirectional edge between two vertices", () => {
-        graph.addEdgeBiDirectional(vertexA, vertexB);
-        expect(graph.hasEdge(vertexA, vertexB)).toBe(true);
-        expect(graph.hasEdge(vertexB, vertexA)).toBe(true);
+        graph.addEdge(vertexA, vertexB);
+        expect(graph.hasEdgeOneDirectional(vertexA, vertexB)).toBe(true);
+        expect(graph.hasEdgeOneDirectional(vertexB, vertexA)).toBe(true);
     });
 
     it("should return the correct neighbours for a vertex", () => {
-        graph.addEdge(vertexA, vertexB);
-        graph.addEdge(vertexA, vertexC);
+        graph.addEdgeOneDirectional(vertexA, vertexB);
+        graph.addEdgeOneDirectional(vertexA, vertexC);
         const neighbours = graph.getNeighbours(vertexA);
         expect(neighbours).toEqual(expect.arrayContaining([vertexB, vertexC]));
     });
 
     it("should throw an error if a vertex does not exist in the graph", () => {
         const vertexE = new Vertex(5, "E");
-        expect(() => graph.addEdge(vertexA, vertexE)).toThrow("Vertex does not exist in the graph");
-        expect(() => graph.addEdge(vertexE, vertexA)).toThrow("Vertex does not exist in the graph");
+        expect(() => graph.addEdgeOneDirectional(vertexA, vertexE)).toThrow("Vertex does not exist in the graph");
+        expect(() => graph.addEdgeOneDirectional(vertexE, vertexA)).toThrow("Vertex does not exist in the graph");
     });
 
     it("should throw an error if an index does not exist in the graph", () => {
@@ -60,9 +60,9 @@ describe("MatrixGraph1", () => {
     });
 
     it("should correctly handle bidirectional edges", () => {
-        graph.addEdgeBiDirectional(vertexA, vertexB);
-        expect(graph.hasEdgeBiDirectional(vertexA, vertexB)).toBe(true);
-        expect(graph.hasEdgeBiDirectional(vertexB, vertexA)).toBe(true);
+        graph.addEdge(vertexA, vertexB);
+        expect(graph.hasEdge(vertexA, vertexB)).toBe(true);
+        expect(graph.hasEdge(vertexB, vertexA)).toBe(true);
     });
 });
 
@@ -75,27 +75,27 @@ describe("MatrixGraph2", () => {
     });
 
     it("should add an edge between two vertices", () => {
-        graph.addEdge("A", "B");
-        expect(graph.hasEdge("A", "B")).toBe(true);
-        expect(graph.hasEdge("B", "A")).toBe(false);
+        graph.addEdgeOneDirectional("A", "B");
+        expect(graph.hasEdgeOneDirectional("A", "B")).toBe(true);
+        expect(graph.hasEdgeOneDirectional("B", "A")).toBe(false);
     });
 
     it("should add a bidirectional edge between two vertices", () => {
-        graph.addEdgeBiDirectional("A", "B");
-        expect(graph.hasEdge("A", "B")).toBe(true);
-        expect(graph.hasEdge("B", "A")).toBe(true);
+        graph.addEdge("A", "B");
+        expect(graph.hasEdgeOneDirectional("A", "B")).toBe(true);
+        expect(graph.hasEdgeOneDirectional("B", "A")).toBe(true);
     });
 
     it("should return the correct neighbours for a vertex", () => {
-        graph.addEdge("A", "B");
-        graph.addEdge("A", "C");
+        graph.addEdgeOneDirectional("A", "B");
+        graph.addEdgeOneDirectional("A", "C");
         const neighbours = graph.getNeighbours("A");
         expect(neighbours).toEqual(expect.arrayContaining(["B", "C"]));
     });
 
     it("should throw an error if a vertex does not exist in the graph", () => {
-        expect(() => graph.addEdge("A", "E")).toThrow("Vertex does not exist in the graph");
-        expect(() => graph.addEdge("E", "A")).toThrow("Vertex does not exist in the graph");
+        expect(() => graph.addEdgeOneDirectional("A", "E")).toThrow("Vertex does not exist in the graph");
+        expect(() => graph.addEdgeOneDirectional("E", "A")).toThrow("Vertex does not exist in the graph");
     });
 
     it("should throw an error if an index does not exist in the graph", () => {
@@ -109,8 +109,8 @@ describe("MatrixGraph2", () => {
     });
 
     it("should correctly handle bidirectional edges", () => {
-        graph.addEdgeBiDirectional("A", "B");
-        expect(graph.hasEdgeBiDirectional("A", "B")).toBe(true);
-        expect(graph.hasEdgeBiDirectional("B", "A")).toBe(true);
+        graph.addEdge("A", "B");
+        expect(graph.hasEdge("A", "B")).toBe(true);
+        expect(graph.hasEdge("B", "A")).toBe(true);
     });
 });

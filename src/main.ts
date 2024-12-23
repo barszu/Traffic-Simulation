@@ -15,7 +15,7 @@ function main() {
     const { nodes, edges, commands, edgeCollisions } = new Preset(presetFilePath).loadPreset();
 
     const manager: AbstractSimulation = new BasicSimulation(nodes, edges, edgeCollisions);
-    // const manager: AbstractSimulation = new AdvancedSimulation(nodes, edges, edgeCollisions);
+    // const manager = new AdvancedSimulation(nodes, edges, edgeCollisions);
 
     let stepNumber = 0;
 
@@ -26,9 +26,16 @@ function main() {
     });
 
     manager.addOnCarAddedCallback(() => {
-        console.log("Car added to: ", manager.getLastAddedCar());
+        console.log("Car added to: ", manager.getWhereLastCarAdded());
+        console.log(manager.getNumberOfCarsInGroupsAsString());
     });
 
+    manager.addOnLightStayCallback(() => {
+        console.log("Light stay");
+    });
+
+    console.log("Initial state");
+    console.log(manager.getStatusAsString());
     for (const command of commands) {
         switch (command.type) {
             case AddVehicleCommandName:

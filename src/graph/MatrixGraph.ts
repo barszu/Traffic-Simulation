@@ -33,15 +33,15 @@ class MatrixGraph<T> {
         return vertex;
     }
 
-    addEdge(from: T, to: T) {
+    addEdgeOneDirectional(from: T, to: T) {
         const fromIndex = this.indexOf(from);
         const toIndex = this.indexOf(to);
         this.matrix[fromIndex][toIndex] = 1;
     }
 
-    addEdgeBiDirectional(from: T, to: T) {
-        this.addEdge(from, to);
-        this.addEdge(to, from);
+    addEdge(from: T, to: T) {
+        this.addEdgeOneDirectional(from, to);
+        this.addEdgeOneDirectional(to, from);
     }
 
     getNeighbours(vertex: T): T[] {
@@ -57,14 +57,14 @@ class MatrixGraph<T> {
         return neighbours;
     }
 
-    hasEdge(from: T, to: T): boolean {
+    hasEdgeOneDirectional(from: T, to: T): boolean {
         const fromIndex = this.indexOf(from);
         const toIndex = this.indexOf(to);
         return this.matrix[fromIndex][toIndex] === 1;
     }
 
-    hasEdgeBiDirectional(from: T, to: T): boolean {
-        return this.hasEdge(from, to) && this.hasEdge(to, from);
+    hasEdge(from: T, to: T): boolean {
+        return this.hasEdgeOneDirectional(from, to) && this.hasEdgeOneDirectional(to, from);
     }
 }
 
