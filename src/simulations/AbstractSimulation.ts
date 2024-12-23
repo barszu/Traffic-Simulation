@@ -5,6 +5,7 @@ import { isSameAlign } from "../Direction";
 import { CallbackExecutor, CallbackType } from "../util/CallbackExecutor";
 
 import { calculateCarsGoThroughNumber, config } from "../../appconfig/driving";
+import { MatrixGraph } from "../MatrixGraph";
 
 type DescribedGroupType = { startNodes: Set<RoadNode>; edges: Set<Edge> };
 type GroupType = Set<Edge>;
@@ -28,8 +29,10 @@ interface SimulationStatusAsStrings {
     carsInGroups: Map<DescribedGroupTypeAsStrings, number>;
 }
 
-function groupBy(nodes: Set<RoadNode>, edges: Set<Edge>): Array<GroupType> {
+function groupBy(nodes: Set<RoadNode>, edges: Set<Edge>, preGivenCollisions: MatrixGraph<Edge>): Array<GroupType> {
     const groups = new Array<Set<Edge>>();
+
+    console.warn("PreGivenCollisions", preGivenCollisions);
 
     function worker(edges: Set<Edge>) {
         const marked = new MarkedNodes(nodes);
@@ -48,11 +51,15 @@ function groupBy(nodes: Set<RoadNode>, edges: Set<Edge>): Array<GroupType> {
                 continue;
             }
 
+            if (preGivenCollisions.hasEdgeBiDirectional(first, edge)) {
+                // kolizja wyznaczona
+                edgesWithColisions.add(edge);
+            }
+
+            // wykrywanie kolizji maszynowo
             if (marked.isMarked(edge.destinationNode)) {
                 edgesWithColisions.add(edge);
-            } else if (
-                !isSameAlign(first.startNode.position, edge.startNode.position)
-            ) {
+            } else if (!isSameAlign(first.startNode.position, edge.startNode.position)) {
                 // z dwoch roznych kierunkow
                 // dla uproszczenia zakładam tu zawsze kolizje
                 edgesWithColisions.add(edge);
@@ -74,9 +81,9 @@ function groupBy(nodes: Set<RoadNode>, edges: Set<Edge>): Array<GroupType> {
 }
 
 function describeGroup(group: Array<GroupType>): Array<DescribedGroupType> {
-    return group.map((edges) => {
+    return group.map(edges => {
         const startNodes = new Set<RoadNode>();
-        edges.forEach((edge) => {
+        edges.forEach(edge => {
             startNodes.add(edge.startNode);
         });
         return { startNodes, edges };
@@ -112,12 +119,12 @@ abstract class AbstractSimulation {
         this.carAddedCallbacks.addCallback(callback);
     }
 
-    constructor(nodes: Set<RoadNode>, edges: Set<Edge>) {
+    constructor(nodes: Set<RoadNode>, edges: Set<Edge>, preGivenCollisions: MatrixGraph<Edge>) {
         this.allNodes = nodes;
         this.allEdges = edges;
-        const groups = groupBy(nodes, edges);
+        const groups = groupBy(nodes, edges, preGivenCollisions);
         this.describedGroups = describeGroup(groups);
-        nodes.forEach((node) => this.allNodesMap.set(node.toString(), node));
+        nodes.forEach(node => this.allNodesMap.set(node.toString(), node));
     }
 
     getActiveGroup(): DescribedGroupType {
@@ -135,36 +142,29 @@ abstract class AbstractSimulation {
 
     getStatusAsString(): SimulationStatusAsStrings {
         return {
-            recentActiveGroup: Array.from(this.getActiveGroup().edges).map(
-                (edge) => edge.toString()
-            ),
+            recentActiveGroup: Array.from(this.getActiveGroup().edges).map(edge => edge.toString()),
             recentActiveFazeTime: this.currActiveFazesCount,
             waitingTimeForGroup: new Map(
                 Array.from(this.waitingTimeForGroup).map(([group, time]) => [
-                    Array.from(group.edges).map((edge) => edge.toString()),
+                    Array.from(group.edges).map(edge => edge.toString()),
                     time.toString(),
                 ])
             ),
             carsInGroups: new Map(
-                Array.from(this.getNumberOfCarsInGroups()).map(
-                    ([group, cars]) => [
-                        Array.from(group.edges).map((edge) => edge.toString()),
-                        cars,
-                    ]
-                )
+                Array.from(this.getNumberOfCarsInGroups()).map(([group, cars]) => [
+                    Array.from(group.edges).map(edge => edge.toString()),
+                    cars,
+                ])
             ),
         };
     }
 
     protected addWaitingTime(excludedGroup: DescribedGroupType) {
-        this.describedGroups.forEach((group) => {
+        this.describedGroups.forEach(group => {
             if (group === excludedGroup) {
                 this.waitingTimeForGroup.set(group, 0);
             } else {
-                this.waitingTimeForGroup.set(
-                    group,
-                    (this.waitingTimeForGroup.get(group) as number) + 1
-                );
+                this.waitingTimeForGroup.set(group, (this.waitingTimeForGroup.get(group) as number) + 1);
             }
         });
     }
@@ -218,7 +218,7 @@ abstract class AbstractSimulation {
 
     protected goCars() {
         const group = this.getActiveGroup();
-        group.startNodes.forEach((node) => {
+        group.startNodes.forEach(node => {
             const carsThrought = calculateCarsGoThroughNumber();
             for (let i = 0; i < carsThrought; i++) {
                 node.tryToRemoveCar();
@@ -228,9 +228,9 @@ abstract class AbstractSimulation {
 
     protected getNumberOfCarsInGroups(): Map<DescribedGroupType, number> {
         const groupToCars = new Map<DescribedGroupType, number>();
-        this.describedGroups.forEach((group) => {
+        this.describedGroups.forEach(group => {
             let cars = 0;
-            group.startNodes.forEach((node) => {
+            group.startNodes.forEach(node => {
                 cars += node.getNumberOfCars();
             });
             groupToCars.set(group, cars);
@@ -241,11 +241,4 @@ abstract class AbstractSimulation {
     abstract nextStep(): isLoopDetected;
 }
 
-export {
-    AbstractSimulation,
-    DescribedGroupType,
-    SimulationStatus,
-    isLoopDetected,
-    GroupNodesType,
-    GroupType,
-};
+export { AbstractSimulation, DescribedGroupType, SimulationStatus, isLoopDetected, GroupNodesType, GroupType };

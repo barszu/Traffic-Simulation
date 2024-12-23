@@ -12,10 +12,10 @@ import { AdvancedSimulation } from "./simulations/AdvancedSimulation";
 function main() {
     const presetFilePath = "../presets/preset1.json";
 
-    const { nodes, edges, commands } = new Preset(presetFilePath).loadPreset();
+    const { nodes, edges, commands, edgeCollisions } = new Preset(presetFilePath).loadPreset();
 
-    // const manager: AbstractSimulation = new BasicSimulation(nodes, edges);
-    const manager: AbstractSimulation = new AdvancedSimulation(nodes, edges);
+    const manager: AbstractSimulation = new BasicSimulation(nodes, edges, edgeCollisions);
+    // const manager: AbstractSimulation = new AdvancedSimulation(nodes, edges, edgeCollisions);
 
     let stepNumber = 0;
 

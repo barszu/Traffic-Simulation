@@ -1,8 +1,8 @@
-import { connect } from "http2";
 import { Edge } from "./Edge";
 import { RoadNode } from "./RoadNode";
 import * as fs from "fs";
 import * as path from "path";
+import { MatrixGraph } from "./MatrixGraph";
 
 const AddVehicleCommandName = "addVehicle";
 const StepCommandName = "step";
@@ -26,7 +26,14 @@ class Preset {
         this.presetFilePath = presetFilePath;
     }
 
-    static createPreset(preset: Array<string>): [Set<RoadNode>, Set<Edge>] {
+    static createPreset(
+        preset: Array<string>,
+        collisions: Map<string, Array<string>>
+    ): {
+        nodes: Set<RoadNode>;
+        edges: Set<Edge>;
+        edgeCollisions: MatrixGraph<Edge>;
+    } {
         const allNodes = new Set<RoadNode>();
         const edges = new Set<Edge>();
 
@@ -49,19 +56,33 @@ class Preset {
                 console.warn("Error", error);
             }
         }
-        return [allNodes, edges];
+
+        const edgeCollisionsMatrix = new MatrixGraph(Array.from(edges));
+        const collisionsMap: Map<string, string[]> = new Map(Object.entries(collisions));
+
+        for (const [key, value] of collisionsMap) {
+            const primaryEdge = Edge.createFrom(key);
+            const collidingEdges = value.map(edge => Edge.createFrom(edge));
+
+            collidingEdges.forEach(edge => {
+                edgeCollisionsMatrix.addEdgeBiDirectional(primaryEdge, edge);
+            });
+        }
+
+        return { nodes: allNodes, edges, edgeCollisions: edgeCollisionsMatrix };
     }
 
     loadPreset() {
-        const { commands, connections } = this.loadJsonPreset();
+        const { commands, connections, collisions } = this.loadJsonPreset();
 
-        const [nodes, edges] = Preset.createPreset(connections);
-        return { nodes, edges, commands };
+        const { nodes, edges, edgeCollisions } = Preset.createPreset(connections, collisions);
+        return { nodes, edges, commands, edgeCollisions };
     }
 
     private loadJsonPreset(): {
         commands: Array<Command>;
         connections: Array<string>;
+        collisions: Map<string, Array<string>>;
     } {
         const filePath = path.resolve(__dirname, this.presetFilePath);
         const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -70,8 +91,9 @@ class Preset {
 
             const commands = Preset.commandsChecker(preset.commands);
             const connections = Preset.connectionsChecker(preset.connections);
+            const collisions = Preset.collisionsChecker(preset.collisions);
 
-            return { commands, connections };
+            return { commands, connections, collisions };
         } catch (error) {
             console.error("Error while parsing preset file", error);
             throw error;
@@ -85,27 +107,27 @@ class Preset {
 
         commands.forEach((command: any, index: number) => {
             if (typeof command.type !== "string") {
-                throw new Error(
-                    `Invalid command at index ${index}: missing or invalid type`
-                );
+                throw new Error(`Invalid command at index ${index}: missing or invalid type`);
             }
             if (command.type === AddVehicleCommandName) {
-                if (
-                    typeof command.startRoad !== "string" ||
-                    typeof command.endRoad !== "string"
-                ) {
+                if (typeof command.startRoad !== "string" || typeof command.endRoad !== "string") {
                     throw new Error(
                         `Invalid addVehicle command at index ${index}: missing or invalid startRoad or endRoad`
                     );
                 }
             } else if (command.type !== StepCommandName) {
-                throw new Error(
-                    `Invalid command type at index ${index}: ${command.type}`
-                );
+                throw new Error(`Invalid command type at index ${index}: ${command.type}`);
             }
         });
 
         return commands;
+    }
+
+    private static singleConnectionChecker(connection: string): string {
+        if (typeof connection !== "string" || !connection.includes(" -> ")) {
+            throw new Error(`Invalid connection: ${connection}`);
+        }
+        return connection;
     }
 
     private static connectionsChecker(connections: any): Array<string> {
@@ -114,25 +136,29 @@ class Preset {
         }
 
         connections.forEach((connection: any, index: number) => {
-            if (
-                typeof connection !== "string" ||
-                !connection.includes(" -> ")
-            ) {
-                throw new Error(
-                    `Invalid connection at index ${index}: ${connection}`
-                );
-            }
+            this.singleConnectionChecker(connection);
         });
 
         return connections;
     }
+
+    private static collisionsChecker(collisionsMap: any): Map<string, Array<string>> {
+        if (typeof collisionsMap !== "object") {
+            throw new Error("Collisions should be an object");
+        }
+
+        for (const [key, value] of Object.entries(collisionsMap)) {
+            if (!Array.isArray(value)) {
+                throw new Error(`Invalid value for key ${key}: ${value}`);
+            }
+            value.forEach((connection: any, index: number) => {
+                this.singleConnectionChecker(connection);
+            });
+            this.singleConnectionChecker(key);
+        }
+
+        return collisionsMap;
+    }
 }
 
-export {
-    Preset,
-    StepCommandName,
-    AddVehicleCommandName,
-    Command,
-    AddVehicleCommand,
-    StepCommand,
-};
+export { Preset, StepCommandName, AddVehicleCommandName, Command, AddVehicleCommand, StepCommand };

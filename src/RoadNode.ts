@@ -1,12 +1,15 @@
 import { Directions, parseDirection } from "./Direction";
 import { CarContainer } from "./util/CarContainer";
 
-class RoadNode extends CarContainer { //aka pas drogowy
+class RoadNode extends CarContainer {
+    //aka pas drogowy, singleton dla nazwy i kierunku
+    private static instances: Map<string, RoadNode> = new Map();
+
     readonly id: number;
     readonly position: Directions;
     readonly connections: Set<RoadNode> = new Set();
 
-    constructor(position: Directions, id: number) {
+    private constructor(position: Directions, id: number) {
         super();
         this.id = id;
         this.position = position;
@@ -28,10 +31,18 @@ class RoadNode extends CarContainer { //aka pas drogowy
                 throw new Error(`Invalid RoadNode: ${text}`);
             }
 
-            return new RoadNode(positionParsed, idParsed);
+            return RoadNode.getInstance(positionParsed, idParsed);
         } catch (error) {
             throw new Error(`Invalid RoadNode: ${text}`);
         }
+    }
+
+    static getInstance(position: Directions, id: number): RoadNode {
+        const key = `${position}${id}`;
+        if (!RoadNode.instances.has(key)) {
+            RoadNode.instances.set(key, new RoadNode(position, id));
+        }
+        return RoadNode.instances.get(key)!;
     }
 
     connect(node: RoadNode) {
