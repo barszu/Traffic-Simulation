@@ -1,14 +1,10 @@
-import { BasicSimulation, DescribedGroupType } from "./BasicSimulation";
-import { RoadNode } from "../RoadNode";
-import { Edge } from "../Edge";
+import { BasicSimulation} from "./BasicSimulation";
+import { DescribedGroupType } from "./AbstractSimulation";
 
 import { calculateCarsGoThroughNumber, config } from "../../appconfig/driving";
 
 
 class AdvancedSimulation extends BasicSimulation {
-  constructor(nodes: Set<RoadNode>, edges: Set<Edge>) { //useless ?
-    super(nodes, edges);
-  }
 
   nextGroup(){
     let groupToCars = this.getNumberOfCarsInGroups()
@@ -49,3 +45,5 @@ class AdvancedSimulation extends BasicSimulation {
         this.setNewGroup(this.describedGroups.indexOf(maxGroup))
   }
 }
+
+export { AdvancedSimulation }

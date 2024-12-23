@@ -1,0 +1,37 @@
+{
+    "connections": ["S2 -> N1", "N2 -> S1", "W1 -> S1", "S2 -> E1"],
+    "commands": [
+        {
+            "type": "addVehicle",
+            "startRoad": "S2",
+            "endRoad": "W1"
+        },
+        {
+            "type": "addVehicle",
+            "startRoad": "N2",
+            "endRoad": "S1"
+        },
+        {
+            "type": "step"
+        },
+        {
+            "type": "step"
+        },
+        {
+            "type": "addVehicle",
+            "startRoad": "S2",
+            "endRoad": "N1"
+        },
+        {
+            "type": "addVehicle",
+            "startRoad": "S2",
+            "endRoad": "N1"
+        },
+        {
+            "type": "step"
+        },
+        {
+            "type": "step"
+        }
+    ]
+}

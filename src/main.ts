@@ -1,6 +1,7 @@
 import { BasicSimulation } from "./simulations/BasicSimulation";
-import { loadPreset } from "./preset";
-
+import { Preset, AddVehicleCommandName, StepCommandName } from "./preset";
+import { AbstractSimulation } from "./simulations/AbstractSimulation";
+import { AdvancedSimulation } from "./simulations/AdvancedSimulation";
 
 // rob kruskala z kolorowaniem do wydzielenia najwiekszych grup dla swiatel, ktore nie koliduja
 
@@ -8,35 +9,41 @@ import { loadPreset } from "./preset";
 // np. jesli w N->S1, E->S2 gdzie droga wyglada tak S1 | S2  (na odwrot bylo by git)
 // ale tez zalezy od budowy drogi
 
-
-
 function main() {
-    const {nodes, edges, commands} = loadPreset()
+    const presetFilePath = "../presets/preset1.json";
 
-    const manager = new BasicSimulation(nodes, edges)
+    const { nodes, edges, commands } = new Preset(presetFilePath).loadPreset();
 
-    let stepNumber = 0
+    // const manager: AbstractSimulation = new BasicSimulation(nodes, edges);
+    const manager: AbstractSimulation = new AdvancedSimulation(nodes, edges);
+
+    let stepNumber = 0;
 
     manager.addOnLightsChangeCallback(() => {
-        console.log("Lights changed")
-        console.log(manager.getStatus())
-        stepNumber++
-    })
+        console.log("Lights changed");
+        console.log(manager.getStatusAsString());
+        stepNumber++;
+    });
 
-    // zrob z tego command executor
+    manager.addOnCarAddedCallback(() => {
+        console.log("Car added to: ", manager.getLastAddedCar());
+    });
 
     for (const command of commands) {
-        if (command.type === "addVehicle") {
-            manager.addCar(command.startRoad) //samochody powinny miec krawedzie
-        } else if (command.type === "step") {
-            const oldStepNumber = stepNumber
-            while (oldStepNumber === stepNumber) { // step until lights change, maksymalnie ilosc ruchu oczekiwania na zmiane swiatel bo ten case nie wygodny
-                // manager.nextGroupUsingTrafic()
-                manager.nextGroup()
-            }
+        switch (command.type) {
+            case AddVehicleCommandName:
+                manager.addCar(command.startRoad); //samochody powinny miec krawedzie? w presetach
+                break;
+            case StepCommandName:
+                const loopDetected = manager.nextStep();
+                if (loopDetected) {
+                    console.warn("Loop detected, ending simulation");
+                    console.log("stepnumber", stepNumber);
+                    break;
+                }
+                break;
         }
     }
 }
 
-main()
-
+main();
