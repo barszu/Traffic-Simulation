@@ -15,6 +15,41 @@
             "endRoad": "S1"
         },
         {
+            "type": "addVehicle",
+            "startRoad": "N2",
+            "endRoad": "S1"
+        },
+        {
+            "type": "addVehicle",
+            "startRoad": "N2",
+            "endRoad": "S1"
+        },
+        {
+            "type": "addVehicle",
+            "startRoad": "N2",
+            "endRoad": "S1"
+        },
+        {
+            "type": "addVehicle",
+            "startRoad": "N2",
+            "endRoad": "S1"
+        },
+        {
+            "type": "addVehicle",
+            "startRoad": "N2",
+            "endRoad": "S1"
+        },
+        {
+            "type": "addVehicle",
+            "startRoad": "N2",
+            "endRoad": "S1"
+        },
+        {
+            "type": "addVehicle",
+            "startRoad": "N2",
+            "endRoad": "S1"
+        },
+        {
             "type": "step"
         },
         {
@@ -29,6 +64,15 @@
             "type": "addVehicle",
             "startRoad": "S2",
             "endRoad": "N1"
+        },
+        {
+            "type": "step"
+        },
+        {
+            "type": "step"
+        },
+        {
+            "type": "step"
         },
         {
             "type": "step"

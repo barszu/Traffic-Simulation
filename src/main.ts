@@ -14,8 +14,8 @@ function main() {
 
     const { nodes, edges, commands, edgeCollisions } = new Preset(presetFilePath).loadPreset();
 
-    const manager: AbstractSimulation = new BasicSimulation(nodes, edges, edgeCollisions);
-    // const manager = new AdvancedSimulation(nodes, edges, edgeCollisions);
+    // const manager: AbstractSimulation = new BasicSimulation(nodes, edges, edgeCollisions);
+    const manager = new AdvancedSimulation(nodes, edges, edgeCollisions);
 
     let stepNumber = 0;
 
