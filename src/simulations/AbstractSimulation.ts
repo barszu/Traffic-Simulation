@@ -1,7 +1,5 @@
 import { RoadNode } from "../RoadNode";
 import { Edge } from "../Edge";
-import { MarkedNodes } from "../MarkedNodes";
-import { isSameAlign } from "../Direction";
 import { CallbackExecutor, CallbackType } from "../util/CallbackExecutor";
 
 import { calculateCarsGoThroughNumber, config } from "../../appconfig/driving";
@@ -210,4 +208,12 @@ abstract class AbstractSimulation {
     abstract nextStep(): isLoopDetected;
 }
 
-export { AbstractSimulation, DescribedGroupType, SimulationStatus, isLoopDetected, GroupNodesType, GroupType };
+export {
+    AbstractSimulation,
+    DescribedGroupType,
+    SimulationStatus,
+    SimulationStatusAsStrings,
+    isLoopDetected,
+    GroupNodesType,
+    GroupType,
+};

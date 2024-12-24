@@ -1,6 +1,4 @@
-import { BasicSimulation } from "./simulations/BasicSimulation";
-import { Preset, AddVehicleCommandName, StepCommandName } from "./preset";
-import { AbstractSimulation } from "./simulations/AbstractSimulation";
+import { Preset, AddVehicleCommandName, StepCommandName } from "./Preset";
 import { AdvancedSimulation } from "./simulations/AdvancedSimulation";
 
 // rob kruskala z kolorowaniem do wydzielenia najwiekszych grup dla swiatel, ktore nie koliduja
