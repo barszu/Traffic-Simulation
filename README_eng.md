@@ -15,11 +15,11 @@ The intersection is represented as a set of vertices and edges, and can take on 
 
 > for the intersection (presets/preset1.json):
 
-![preset1](docs_img\preset1A.jpg)
+![preset1](docs_img/preset1A.jpg)
 
 > It is represented as:
 
-![preset1](docs_img\preset1B.jpg)
+![preset1](docs_img/preset1B.jpg)
 
 ## Operation
 
