@@ -1,12 +1,6 @@
 import { Preset, AddVehicleCommandName, StepCommandName } from "./Preset";
 import { AdvancedSimulation } from "./simulations/AdvancedSimulation";
 
-// rob kruskala z kolorowaniem do wydzielenia najwiekszych grup dla swiatel, ktore nie koliduja
-
-// krawedzie sie przetna jesli maja wspolne wezly, zrodla z innych kierunkow gdzie kreska sie przetnie
-// np. jesli w N->S1, E->S2 gdzie droga wyglada tak S1 | S2  (na odwrot bylo by git)
-// ale tez zalezy od budowy drogi
-
 function main() {
     const presetFilePath = "../presets/preset1.json";
 

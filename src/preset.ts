@@ -19,13 +19,26 @@ interface StepCommand {
     type: typeof StepCommandName;
 }
 
+/**
+ * A class for managing and creating presets.
+ */
 class Preset {
     presetFilePath: string;
 
+    /**
+     * Creates an instance of Preset.
+     * @param {string} presetFilePath - The file path to the preset file.
+     */
     constructor(presetFilePath: string) {
         this.presetFilePath = presetFilePath;
     }
 
+    /**
+     * Creates a preset from the given connections and collisions.
+     * @param {Array<string>} preset - An array of road connections.
+     * @param {Map<string, Array<string>>} collisions - A map of collisions.
+     * @returns {{nodes: Set<RoadNode>, edges: Set<Edge>, edgeCollisions: MatrixGraph<Edge>}} - The created preset.
+     */
     static createPreset(
         preset: Array<string>,
         collisions: Map<string, Array<string>>
@@ -72,6 +85,10 @@ class Preset {
         return { nodes: allNodes, edges, edgeCollisions: edgeCollisionsMatrix };
     }
 
+    /**
+     * Loads the preset from the file.
+     * @returns {{nodes: Set<RoadNode>, edges: Set<Edge>, commands: Array<Command>, edgeCollisions: MatrixGraph<Edge>}} - The loaded preset.
+     */
     loadPreset() {
         const { commands, connections, collisions } = this.loadJsonPreset();
 
@@ -79,6 +96,11 @@ class Preset {
         return { nodes, edges, commands, edgeCollisions };
     }
 
+    /**
+     * Loads the JSON preset from the file.
+     * @private
+     * @returns {{commands: Array<Command>, connections: Array<string>, collisions: Map<string, Array<string>>}} - The loaded JSON preset.
+     */
     private loadJsonPreset(): {
         commands: Array<Command>;
         connections: Array<string>;
@@ -100,6 +122,13 @@ class Preset {
         }
     }
 
+    /**
+     * Checks the validity of the commands.
+     * @private
+     * @param {any} commands - The commands to check.
+     * @returns {Array<Command>} - The validated commands.
+     * @throws {Error} - If the commands are invalid.
+     */
     private static commandsChecker(commands: any): Array<Command> {
         if (!Array.isArray(commands)) {
             throw new Error("Commands should be an array");
@@ -123,6 +152,13 @@ class Preset {
         return commands;
     }
 
+    /**
+     * Checks the validity of a single connection.
+     * @private
+     * @param {string} connection - The connection to check.
+     * @returns {string} - The validated connection.
+     * @throws {Error} - If the connection is invalid.
+     */
     private static singleConnectionChecker(connection: string): string {
         if (typeof connection !== "string" || !connection.includes(" -> ")) {
             throw new Error(`Invalid connection: ${connection}`);
@@ -130,6 +166,13 @@ class Preset {
         return connection;
     }
 
+    /**
+     * Checks the validity of the connections.
+     * @private
+     * @param {any} connections - The connections to check.
+     * @returns {Array<string>} - The validated connections.
+     * @throws {Error} - If the connections are invalid.
+     */
     private static connectionsChecker(connections: any): Array<string> {
         if (!Array.isArray(connections)) {
             throw new Error("Connections should be an array");
@@ -142,6 +185,13 @@ class Preset {
         return connections;
     }
 
+    /**
+     * Checks the validity of the collisions.
+     * @private
+     * @param {any} collisionsMap - The collisions to check.
+     * @returns {Map<string, Array<string>>} - The validated collisions.
+     * @throws {Error} - If the collisions are invalid.
+     */
     private static collisionsChecker(collisionsMap: any): Map<string, Array<string>> {
         if (typeof collisionsMap !== "object") {
             throw new Error("Collisions should be an object");
