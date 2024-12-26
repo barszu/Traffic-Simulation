@@ -1,21 +1,13 @@
-import { BasicSimulation } from "./simulations/BasicSimulation";
-import { Preset, AddVehicleCommandName, StepCommandName } from "./preset";
-import { AbstractSimulation } from "./simulations/AbstractSimulation";
+import { Preset, AddVehicleCommandName, StepCommandName } from "./Preset";
 import { AdvancedSimulation } from "./simulations/AdvancedSimulation";
-
-// rob kruskala z kolorowaniem do wydzielenia najwiekszych grup dla swiatel, ktore nie koliduja
-
-// krawedzie sie przetna jesli maja wspolne wezly, zrodla z innych kierunkow gdzie kreska sie przetnie
-// np. jesli w N->S1, E->S2 gdzie droga wyglada tak S1 | S2  (na odwrot bylo by git)
-// ale tez zalezy od budowy drogi
 
 function main() {
     const presetFilePath = "../presets/preset1.json";
 
-    const { nodes, edges, commands } = new Preset(presetFilePath).loadPreset();
+    const { nodes, edges, commands, edgeCollisions } = new Preset(presetFilePath).loadPreset();
 
-    // const manager: AbstractSimulation = new BasicSimulation(nodes, edges);
-    const manager: AbstractSimulation = new AdvancedSimulation(nodes, edges);
+    // const manager: AbstractSimulation = new BasicSimulation(nodes, edges, edgeCollisions);
+    const manager = new AdvancedSimulation(nodes, edges, edgeCollisions);
 
     let stepNumber = 0;
 
@@ -26,9 +18,16 @@ function main() {
     });
 
     manager.addOnCarAddedCallback(() => {
-        console.log("Car added to: ", manager.getLastAddedCar());
+        console.log("Car added to: ", manager.getWhereLastCarAdded());
+        console.log(manager.getNumberOfCarsInGroupsAsString());
     });
 
+    manager.addOnLightStayCallback(() => {
+        console.log("Light stay");
+    });
+
+    console.log("Initial state");
+    console.log(manager.getStatusAsString());
     for (const command of commands) {
         switch (command.type) {
             case AddVehicleCommandName:
