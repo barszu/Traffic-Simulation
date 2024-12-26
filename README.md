@@ -1,5 +1,7 @@
 # Traffic Simulation Project
 
+[🇬🇧 English version here](README_eng.md)
+
 ## Opis projektu
 
 Projekt symulacji ruchu drogowego, który modeluje zachowanie pojazdów na skrzyżowaniach z sygnalizacją świetlną. Projekt zawiera różne klasy i moduły do zarządzania węzłami drogowymi, krawędziami, symulacjami oraz presetami.
