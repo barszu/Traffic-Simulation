@@ -17,11 +17,11 @@ Skrzyżowanie zostało przedstawione jako zbiór wierzchołków oraz krawędzi, 
 
 > dla skrzyżowania (presets/preset1.json):
 
-![preset1](docs_img\preset1A.jpg)
+![preset1](docs_img/preset1A.jpg)
 
 > Jest przedstawione jako:
 
-![preset1](docs_img\preset1B.jpg)
+![preset1](docs_img/preset1B.jpg)
 
 ## Działanie
 
